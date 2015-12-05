@@ -1,17 +1,242 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+PRS = {}
 
-# Custom for Visual Studio
-*.cs     diff=csharp
+--[[ Edit these settings to your liking ]]--
 
-# Standard to msysgit
-*.doc	 diff=astextplain
-*.DOC	 diff=astextplain
-*.docx diff=astextplain
-*.DOCX diff=astextplain
-*.dot  diff=astextplain
-*.DOT  diff=astextplain
-*.pdf  diff=astextplain
-*.PDF	 diff=astextplain
-*.rtf	 diff=astextplain
-*.RTF	 diff=astextplain
+PRS.Enabled = true -- Pretty self-explanatory :D
+PRS.KickTooMany = true -- If a person with access to reserved slot joins, but the server is full, it kicks the person with the shortest time on the server
+PRS.HiddenReserved = false -- Should he reserved slots be hidden from the menu. So if this is true when people look at the server in menu, they see that there are no slots left, if false they will see empty slots, but if they have no access to reserved slots they won't be able to join
+PRS.SlotNum = 24 -- How many slots should be resered, remember if your server is set to have 16 slots and you reserver 2, so if there are 14 people on, only specified SteamID's will
+PRS.ReservedGroups = { "admin", "Owner" } -- Groups that will be able to join the reserved slots, add them this way: { "admin", "Owner", "user"} and so on (Case sensitive!) {} if no groups. If you use AssMod then you must have the ranks number based because that's how AssMod works
+PRS.ReservedSteamIDs = { "STEAM_0:0:16280441", "STEAM_0:0:45849025", "STEAM_0:1:26581069", "STEAM_0:0:31367388", "STEAM_0:1:15688682", "STEAM_0:0:79660602", "STEAM_0:0:38403986", "STEAM_0:1:57830444", "STEAM_0:1:23232826", "STEAM_0:1:61627852", "STEAM_0:1:9180145", "STEAM_0:1:63799107", "STEAM_0:1:54126455", "STEAM_0:1:31148306", "STEAM_0:1:5577093", "STEAM_0:0:93581708", "STEAM_0:1:64851006", "STEAM_0:1:66835060", "STEAM_0:1:36904747", "STEAM_0:1:92992158", "STEAM_0:1:58570558", "STEAM_0:1:58570558", "STEAM_0:1:32543400", "STEAM_0:0:19193459", "STEAM_0:1:44975471", "STEAM_0:0:46112663", "STEAM_0:1:59746818", "STEAM_0:0:42852184", "STEAM_0:0:42162360", "STEAM_0:1:59542401", "STEAM_0:0:40973431", "STEAM_0:1:79504365", "STEAM_0:0:47955504", "STEAM_0:1:85631910", "STEAM_0:0:72109215", "STEAM_1:1:32106022", "STEAM_0:1:41515498" } -- SteamIDs that will be able to join the reserved slots even if they don't have a reserved group, add them this way: { "admin", "Owner", "user"} and so on. {} if no SteamIDs
+PRS.BlockMsg = [[
+--------------------------------------------------------------------
+           You cannot join, You're not on the whitelist
+		If you were previously whitelisted and aren't now
+							Message Red
+--------------------------------------------------------------------
+]] -- Message that will show up for the person that couldn't join because the server had no normal slots open
+PRS.KickMsg = [[
+--------------------------------------------------------------------
+           You cannot join, You're not on the whitelist
+		If you were previously whitelisted and aren't now
+							Message Red
+--------------------------------------------------------------------
+]] -- Message that will show up for the person that was kicked to free a spot for reserved
+PRS.NoSlotsToFreeMsg = [[
+--------------------------------------------------------------------
+           You cannot join, You're not on the whitelist
+		If you were previously whitelisted and aren't now
+							Message Red
+--------------------------------------------------------------------
+]] -- Message that will show up for the person that couldn't join because everyone on the server has reserved slot and noone can be kicked
+PRS.FullServerMsg = [[
+--------------------------------------------------------------------
+           You cannot join, You're not on the whitelist
+		If you were previously whitelisted and aren't now
+							Message Red
+--------------------------------------------------------------------
+]] -- Message that will show up for the person that couldn't join when the server is full and "KickTooMany" is off
+
+
+PRS.KickFunction = function(Ply)
+
+end -- Function that will be run on a player before they get kicked, can be used for giving the person points as compensation
+
+PRS.ExtraCheck = function(SteamID)
+
+end -- Function that you can use to add different ways of reserved slot access, for example if a user has a specific PData value. return true inside it if the person should be let in the reserved slots
+
+--[[ Example for PRS.ExtraCheck
+	PRS.ExtraCheck = function(SteamID)
+		return util.GetPData(SteamID, "PRSReserverSlot", "0") == "1"
+	end
+]]-- So if you want a person to have reserved slots, you set their PData ("PRSReserverSlot") to "1" and to disable it just remove it or set to anything else. To set someone to have reserved slot privilege use Ply:SetPData("PRSReserverSlot", "1")
+
+PRS.LetReservedPastPass = true -- Will not check if password is correct if the person has a rank with reserved slots
+PRS.KickLowestTime = true -- If true it will kick the person that has connected the most recently, if false it will kick the person that has joined the longest time ago
+
+
+
+
+--[[ Do NOT edit anything further than this, unless you know what you are doing! ]]--
+
+
+PRS.Initialized = false
+PRS.OnlinePlayerNum = 0
+PRS.SGSteamIDs = {}
+
+PRS.NormalSlotsNum = 999
+
+
+hook.Add("CheckPassword", "ProperReservedSlotsCheckPasswordHook", function(Steam64, IP, ServerPass, ClientPass, PlayerName)
+	local SteamID = util.SteamIDFrom64(Steam64)
+
+	if ServerPass != nil && ServerPass != "" && ServerPass != ClientPass then
+		local IsReserved = PRS.IsReservedID(SteamID)
+		if IsReserved && PRS.LetReservedPastPass then
+			return true
+		end
+	end
+
+	if PRS.OnlinePlayerNum >= game.MaxPlayers() then
+		local IsReserved = PRS.IsReservedID(SteamID)
+		if IsReserved then
+			if PRS.KickTooMany then
+				local TimePlayer = nil
+				local Time = 9999999
+				if !PRS.KickLowestTime then
+					Time = 0
+				end
+
+				for n, j in pairs(player.GetAll() ) do
+					local CurPlyTime = j:TimeConnected()
+					if !PRS.IsReservedPly(j) && ( (Time > CurPlyTime && PRS.KickLowestTime) || (Time < CurPlyTime && !PRS.KickLowestTime) )  then
+						Time = CurPlyTime
+						TimePlayer = j
+					end
+				end
+
+				if TimePlayer != nil then
+					local FRun = PRS.KickFunction or function() MsgC(Color(255, 0, 0), "[PRS] Missing config PRS.KickFunction!\n") end
+					FRun(TimePlayer)
+					TimePlayer:Kick(PRS.KickMsg)
+				else
+					return false, PRS.NoSlotsToFreeMsg
+				end
+			else
+				return false, PRS.FullServerMsg
+			end
+		else
+			return false, PRS.FullServerMsg
+		end
+	elseif PRS.OnlinePlayerNum >= PRS.NormalSlotsNum then
+		local IsReserved = PRS.IsReservedID(SteamID)
+		if !IsReserved then
+			return false, PRS.BlockMsg
+		end
+	end
+end)
+
+function PRS.IsReservedID(SteamID)
+	if table.HasValue(PRS.ReservedSteamIDs, SteamID) then
+		return true
+	end
+
+	if PRS.ExtraCheck then
+		if PRS.ExtraCheck(SteamID) then
+			return true
+		end
+	end
+
+	if ULib then
+		local User = ULib.ucl.users[SteamID]
+		if User then
+			if table.HasValue(PRS.ReservedGroups, User.group) then
+				return true
+			end
+		end
+	elseif evolve then
+		for n, j in pairs(evolve.PlayerInfo) do
+			if j.SteamID == SteamID then
+				if table.HasValue(PRS.ReservedGroups, j.Rank) then
+					return true
+				else
+					return false
+				end
+			end
+		end
+	elseif moderator then
+		local Rank = moderator.users[SteamID]
+		if table.HasValue(PRS.ReservedGroups, Rank) then
+			return true
+		end
+	elseif ASS_VERSION then
+		local T = ASS_GetRankingTable()
+		if T then
+			local User = T[SteamID]
+			if User then
+				if table.HasValue(PRS.ReservedGroups, tonumber(User.Rank) ) then
+					return true
+				end
+			end
+		end
+	elseif serverguard then
+		if table.HasValue(PRS.SGSteamIDs, SteamID) then
+			return true
+		end
+	else
+		Msg("\n[Proper Reserved Slots] Couldn't find a supported admin mod, can't tell if player has reserved slot!\n")
+	end
+	return false
+end
+
+function PRS.IsReservedPly(Ply)
+
+	if PRS.ExtraCheck then
+		if PRS.ExtraCheck(Ply:SteamID() ) then
+			return true
+		end
+	end
+
+	local Rank = ""
+	if ULib then
+		Rank = Ply:GetUserGroup() or ""
+	elseif evolve then
+		Rank = Ply:GetProperty("Rank", "")
+	elseif moderator then
+		Rank = moderator.GetGroup(Ply) or ""
+	elseif ASS_VERSION then
+		Rank = Ply:GetLevel() or ""
+	elseif serverguard then
+		Rank = serverguard.player:GetRank(Ply) or ""
+	else
+		MsgC(Color(255, 0, 0), "\n[Proper Reserved Slots] Couldn't find a supported admin mod to check what player to kick for a reserved slot!\n")
+		return false
+	end
+
+	if table.HasValue(PRS.ReservedGroups, Rank) then
+		return true
+	else
+		return false
+	end
+end
+
+function PRS.Initialize()
+	PRS.NormalSlotsNum = game.MaxPlayers() - PRS.SlotNum
+	if PRS.HiddenReserved then
+		game.ConsoleCommand("sv_visiblemaxplayers " .. PRS.NormalSlotsNum .. "\n")
+	end
+	PRS.Initialized = true
+end
+
+hook.Add("serverguard.mysql.OnConnected", "ProperReservedSlotsServerGuardRanks", function()
+	local Callback = function(Data)
+		if istable(Data) then
+			for n, j in pairs(Data) do
+				if table.HasValue(PRS.ReservedGroups, j.rank) then
+					table.insert(PRS.SGSteamIDs, j.steam_id)
+				end
+			end
+		end
+	end
+
+	local Query = serverguard.mysql.Push("SELECT", "serverguard_users")
+		Query:AddSelect("steam_id, rank")
+		serverguard.mysql.Pop(Callback)
+end)
+
+hook.Add("PostGamemodeLoaded","ProperReservedSlotsPostGMHook", function()
+	if PRS.Enabled then
+		PRS.Initialize()
+	end
+end)
+
+gameevent.Listen("player_disconnect")
+hook.Add("player_disconnect","ProperReservedSlotsDisconnectHook", function(Data)
+	PRS.OnlinePlayerNum = PRS.OnlinePlayerNum - 1
+end)
+
+gameevent.Listen("player_connect")
+hook.Add("player_connect","ProperReservedSlotsConnectHook", function(Data)
+	PRS.OnlinePlayerNum = PRS.OnlinePlayerNum + 1
+end)
