@@ -57,14 +57,21 @@ __HOOK[ "InitPostEntity" ] = function()
 			end
 		end
 		
+		--Remove black box teleport
+		for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
+		if ent:GetPos() == Vector( 15889, -14790, -697 ) then
+			ent:Remove()
+			end
+		end
+		
 		for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
 		if ent:GetPos() == Vector( 15882, -14790, -982 ) then
 			ent:Remove()
 			end
 		end
 		
-		__HOOK[ "InitPostEntity" ] = function()
-	for _,ent in pairs( ents.FindByClass( "desty_start" ) ) do
+		--Remove weird start point
+		for _,ent in pairs( ents.FindByClass( "desty_start" ) ) do
 		ent:Remove()
 			end
 		end
