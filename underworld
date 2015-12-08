@@ -2,7 +2,7 @@
 
 
 __HOOK[ "InitPostEntity" ] = function()
-	
+	--This is a weird black box near spawn, think it's a jail so i removed
 	for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
 		if ent:GetPos() == Vector( 8088, -13477.5, 15006.5 ) then
 			ent:Remove()
@@ -17,6 +17,48 @@ __HOOK[ "InitPostEntity" ] = function()
 		
 		for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
 		if ent:GetPos() == Vector( 12192, -14346, -982 ) then
+			ent:Remove()
+			end
+		end
+		--Below this is one of the jails
+				for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
+		if ent:GetPos() == Vector( 15816, -15502, -722 ) then
+			ent:Remove()
+			end
+		end
+		
+				for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
+		if ent:GetPos() == Vector( 15816, -15502, -767 ) then
+			ent:Remove()
+			end
+		end
+		
+				for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
+		if ent:GetPos() == Vector( 15816, -15502, -796 ) then
+			ent:Remove()
+			end
+		end
+		
+						for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
+		if ent:GetPos() == Vector( 15816, -15502, -813 ) then
+			ent:Remove()
+			end
+		end
+		--Next jail
+								for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
+		if ent:GetPos() == Vector( 15816, -15066, -722 ) then
+			ent:Remove()
+			end
+		end
+		
+								for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
+		if ent:GetPos() == Vector( 15816, -15066, -797 ) then
+			ent:Remove()
+			end
+		end
+		
+								for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
+		if ent:GetPos() == Vector( 15882, -14790, -982 ) then
 			ent:Remove()
 			end
 		end
