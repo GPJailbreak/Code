@@ -1,0 +1,30 @@
+--Fix this fucking map
+
+
+__HOOK[ "InitPostEntity" ] = function()
+	
+	for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
+		if ent:GetPos() == Vector( 8088, -13477.5, 15006.5 ) then
+			ent:Remove()
+			end
+		end
+		
+		for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
+		if ent:GetPos() == Vector( 16016, -14346, -982 ) then
+			ent:Remove()
+			end
+		end
+		
+		for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
+		if ent:GetPos() == Vector( 12192, -14346, -982 ) then
+			ent:Remove()
+			end
+		end
+		
+		__HOOK[ "InitPostEntity" ] = function()
+	for _,ent in pairs( ents.FindByClass( "desty_start" ) ) do
+		ent:Remove()
+			end
+		end
+		
+	end
