@@ -1,74 +1,27 @@
 --Fix this fucking map
 
+local remove = {
+Vector( 8088, -13477.5, 15006.5 ),
+Vector( 16016, -14346, -982 ),
+Vector( 12192, -14346, -982 ),
+Vector( 15816, -15502, -722 ),
+Vector( 15816, -15502, -767 ),
+Vector( 15816, -15502, -796 ),
+Vector( 15816, -15502, -813 ),
+Vector( 15816, -15066, -722 ),
+Vector( 15816, -15066, -797 ),
+Vector( 15889, -14790, -697 ),
+Vector( 15882, -14790, -982 ),
+Vector( 15882, -14790, -982 )
+}
 
 __HOOK[ "InitPostEntity" ] = function()
---This is a weird black box near spawn, think it's a jail so i removed
-	for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
-		if ent:GetPos() == Vector( 8088, -13477.5, 15006.5 ) then
-			ent:Remove()
-			end
+	for k,v in pairs(ents.FindByClass("trigger_teleport")) do
+		if(table.HasValue(remove,v:GetPos())) then
+			v:Remove()
 		end
-		
-	for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
-		if ent:GetPos() == Vector( 16016, -14346, -982 ) then
-			ent:Remove()
-			end
-		end
-		
-	for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
-		if ent:GetPos() == Vector( 12192, -14346, -982 ) then
-			ent:Remove()
-			end
-		end
---Below this is one of the jails
-	for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
-		if ent:GetPos() == Vector( 15816, -15502, -722 ) then
-			ent:Remove()
-			end
-		end
-		
-	for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
-		if ent:GetPos() == Vector( 15816, -15502, -767 ) then
-			ent:Remove()
-			end
-		end
-		
-	for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
-		if ent:GetPos() == Vector( 15816, -15502, -796 ) then
-			ent:Remove()
-			end
-		end
-		
-	for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
-		if ent:GetPos() == Vector( 15816, -15502, -813 ) then
-			ent:Remove()
-			end
-		end
---Next jail
-	for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
-		if ent:GetPos() == Vector( 15816, -15066, -722 ) then
-			ent:Remove()
-			end
-		end
-		
-	for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
-		if ent:GetPos() == Vector( 15816, -15066, -797 ) then
-			ent:Remove()
-			end
-		end
-		
---Remove black box teleport
-	for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
-		if ent:GetPos() == Vector( 15889, -14790, -697 ) then
-			ent:Remove()
-			end
-		end
-		
-	for _,ent in pairs( ents.FindByClass( "trigger_teleport" ) ) do
-		if ent:GetPos() == Vector( 15882, -14790, -982 ) then
-			ent:Remove()
-			end
-		end
+	end
+
 --Remove the logic timer teleporting you to a jail
 	for _,ent in pairs( ents.FindByClass( "logic_timer" ) ) do
 			ent:Remove()
