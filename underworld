@@ -69,11 +69,4 @@ __HOOK[ "InitPostEntity" ] = function()
 			ent:Remove()
 			end
 		end
-		
-		--Remove weird start point
-		for _,ent in pairs( ents.FindByClass( "desty_start" ) ) do
-		ent:Remove()
-			end
-		end
-		
 	end
