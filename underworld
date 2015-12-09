@@ -1,7 +1,6 @@
 --Fix this fucking map
 
 local remove = {
-Vector( 8088, -13477.5, 15006.5 ),
 Vector( 16016, -14346, -982 ),
 Vector( 12192, -14346, -982 ),
 Vector( 15816, -15502, -722 ),
